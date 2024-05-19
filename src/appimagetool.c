@@ -34,6 +34,8 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+// fix: g_unlink can not be identified by clangd.
+#include <glib/gstdio.h>
 
 #include <stdio.h>
 #include <argp.h>
@@ -62,7 +64,8 @@ typedef enum {
     fARCH_i686,
     fARCH_x86_64,
     fARCH_armhf,
-    fARCH_aarch64
+    fARCH_aarch64,
+    fARCH_loong64
 } fARCH;
 
 static gchar const APPIMAGEIGNORE[] = ".appimageignore";
@@ -281,7 +284,7 @@ static void replacestr(char *line, const char *search, const char *replace)
 int count_archs(bool* archs) {
     int countArchs = 0;
     int i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 5; i++) {
         countArchs += archs[i];
     }
     return countArchs;
@@ -297,6 +300,8 @@ gchar* archToName(fARCH arch) {
             return "i686";
         case fARCH_x86_64:
             return "x86_64";
+        case fARCH_loong64:
+            return "loong64";
     }
 }
 
@@ -309,6 +314,8 @@ gchar* getArchName(bool* archs) {
         return archToName(fARCH_armhf);
     else if (archs[fARCH_aarch64])
         return archToName(fARCH_aarch64);
+    else if (archs[fARCH_loong64])
+        return archToName(fARCH_loong64);
     else
         return "all";
 }
@@ -336,6 +343,12 @@ void extract_arch_from_e_machine_field(int16_t e_machine, const gchar* sourcenam
         archs[fARCH_aarch64] = 1;
         if(verbose)
             fprintf(stderr, "%s used for determining architecture %s\n", sourcename, archToName(fARCH_aarch64));
+    }
+    // https://areweloongyet.com/docs/world-compat-details/#elf-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F
+    if (e_machine == 258) {
+        archs[fARCH_loong64] = 1;
+        if(verbose)
+            fprintf(stderr, "%s used for determining architecture %s\n", sourcename, archToName(fARCH_loong64));
     }
 }
 
@@ -369,6 +382,10 @@ void extract_arch_from_text(gchar *archname, const gchar* sourcename, bool* arch
                 archs[fARCH_aarch64] = 1;
                 if (verbose)
                     fprintf(stderr, "%s used for determining architecture ARM aarch64\n", sourcename);
+            } else if (g_ascii_strncasecmp("loong64", archname, 20) == 0) {
+                archs[fARCH_loong64] = 1;
+                if (verbose)
+                    fprintf(stderr, "%s used for determining architecture loong64\n", sourcename);
             }
         }
     }

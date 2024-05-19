@@ -9,20 +9,25 @@ fi
 
 case "$ARCH" in
     x86_64)
-        image_prefix=amd64
+        image_prefix=amd64/alpine
         platform=linux/amd64
         ;;
     i686)
-        image_prefix=i386
+        image_prefix=i386/alpine
         platform=linux/i386
         ;;
     armhf)
-        image_prefix=arm32v7
+        image_prefix=arm32v7/alpine
         platform=linux/arm/v7
         ;;
     aarch64)
-        image_prefix=arm64v8
+        image_prefix=arm64v8/alpine
         platform=linux/arm64/v8
+        ;;
+    loong64)
+        # image_prefix=lcr.loongnix.cn/library # official unsatble
+        image_prefix=quay.io/msojocs/alpine-loong64
+        platform=linux/loong64
         ;;
     *)
         echo "unknown architecture: $ARCH"
@@ -31,7 +36,7 @@ case "$ARCH" in
 esac
 
 # libassuan-static is supported only from 3.19 onwards
-image="$image_prefix"/alpine:3.19
+image="$image_prefix":3.19
 
 repo_root="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")"/..)"
 
@@ -62,10 +67,11 @@ docker run \
 
 set -euxo pipefail
 
-apk add bash git gcc g++ cmake make file desktop-file-utils wget \
+apk add --no-cache bash git gcc g++ cmake make file desktop-file-utils wget \
     gpgme-dev libgcrypt-dev libgcrypt-static argp-standalone zstd-dev zstd-static util-linux-static \
     glib-static libassuan-static zlib-static libgpg-error-static \
-    curl-dev curl-static nghttp2-static libidn2-static openssl-libs-static brotli-static c-ares-static libunistring-static
+    curl-dev curl-static nghttp2-static libidn2-static openssl-libs-static brotli-static c-ares-static libunistring-static \
+    libunistring-dev libpsl-static
 
 # libcurl's pkg-config scripts are broken. everywhere, everytime.
 # these additional flags have been collected from all the .pc files whose libs are mentioned as -l<lib> in Libs.private

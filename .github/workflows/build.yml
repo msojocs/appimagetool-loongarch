@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ARCH: ['x86_64', 'i686', 'armhf', 'aarch64']
+        ARCH: ['x86_64', 'i686', 'armhf', 'aarch64', 'loong64']
 
     env:
       ARCH: ${{ matrix.ARCH }}
@@ -23,7 +23,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Set up QEMU integration for Docker
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        run: docker run --rm --privileged loongcr.lcpu.dev/multiarch/archlinux --reset -p yes
 
       - name: Build in Docker container
         run: |
