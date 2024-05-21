@@ -30,6 +30,17 @@ else
     jobs="$(nproc --ignore=1)"
 fi
 
+# if [ "$ARCH" == "loong64" ];then
+#  wget https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz
+#  tar -zxf libpsl-0.21.5.tar.gz
+#  cd libpsl-0.21.5
+#  ./configure
+#  make
+#  make check
+#  make install
+#  cd ..
+#  rm -rf libpsl-0.21.5
+# fi
 make -j"$jobs"
 
 make install DESTDIR=AppDir
@@ -41,7 +52,7 @@ cp "$(which mksquashfs)" AppDir/usr/bin
 cp "$repo_root"/resources/AppRun.sh AppDir/AppRun
 chmod +x AppDir/AppRun
 
-wget https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-"$ARCH"
+wget https://github.com/msojocs/type2-runtime-loongarch/releases/download/continuous/runtime-"$ARCH"
 
 pushd AppDir
 ln -s usr/share/applications/appimagetool.desktop .
